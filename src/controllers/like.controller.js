@@ -1,13 +1,13 @@
 const Like = require("../models/like.model");
 const Post = require("../models/post");
 
-// Blog yazısını beğen / beğeniyi geri çek
+
 const toggleLike = async (req, res) => {
     try {
         const { postId } = req.params;
         const userId = req.user.id;
 
-        // Blog yazısı var mı?
+        
         const post = await Post.findById(postId);
 
         if (!post) {
@@ -17,13 +17,13 @@ const toggleLike = async (req, res) => {
             });
         }
 
-        // Kullanıcı bu yazıyı daha önce beğenmiş mi?
+      
         const existingLike = await Like.findOne({
             user: userId,
             post: postId,
         });
 
-        // Daha önce beğenmişse like'ı kaldır
+     
         if (existingLike) {
             await existingLike.deleteOne();
 
@@ -38,7 +38,7 @@ const toggleLike = async (req, res) => {
             });
         }
 
-        // Daha önce beğenmemişse yeni Like oluştur
+      
         await Like.create({
             user: userId,
             post: postId,

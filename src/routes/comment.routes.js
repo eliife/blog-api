@@ -12,7 +12,6 @@ const authMiddleware = require("../middlewares/auth.middleware");
 const router = express.Router();
 
 
-// Yorum oluştur
 router.post(
     "/:postId",
     authMiddleware,
@@ -20,14 +19,14 @@ router.post(
 );
 
 
-// Blogun yorumlarını getir
+
 router.get(
     "/:postId",
     getCommentsByPost
 );
 
 
-// Yorumu sil
+
 router.delete(
     "/:id",
     authMiddleware,
@@ -35,7 +34,7 @@ router.delete(
 );
 
 
-// Yoruma cevap ver
+
 router.post(
     "/:commentId/reply",
     authMiddleware,

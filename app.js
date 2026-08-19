@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 require("dotenv").config();
 
 const dbConnection = require("./src/db/dbConnection");
@@ -9,7 +10,7 @@ const commentRoutes = require("./src/routes/comment.routes");
 const likeRoutes = require("./src/routes/like.routes");
 
 const app = express();
-
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

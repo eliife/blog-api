@@ -11,7 +11,6 @@ const uploadProfileImage = require("../middlewares/upload.middleware");
 const router = express.Router();
 
 
-// Profil bilgilerini getir
 router.get(
     "/",
     authMiddleware,
@@ -19,7 +18,6 @@ router.get(
 );
 
 
-// Profil bilgilerini ve profil resmini güncelle
 router.put(
     "/",
     authMiddleware,

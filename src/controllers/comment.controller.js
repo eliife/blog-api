@@ -1,7 +1,7 @@
 const Comment = require("../models/comment.model");
 const Post = require("../models/post");
 
-// Yeni yorum oluştur
+
 const createComment = async (req, res) => {
     try {
         const { content } = req.body;
@@ -45,7 +45,7 @@ const createComment = async (req, res) => {
 };
 
 
-// Bir blogun yorumlarını getir
+
 const getCommentsByPost = async (req, res) => {
     try {
         const { postId } = req.params;
@@ -78,7 +78,7 @@ const getCommentsByPost = async (req, res) => {
     }
 };
 
-// Yorumu sil
+
 const deleteComment = async (req, res) => {
     try {
         const comment = await Comment.findById(req.params.id);
@@ -90,7 +90,7 @@ const deleteComment = async (req, res) => {
             });
         }
 
-        // Yorumu silmeye çalışan kullanıcı yorumun sahibi mi?
+        
         if (comment.author.toString() !== req.user.id) {
             return res.status(403).json({
                 success: false,
@@ -113,7 +113,7 @@ const deleteComment = async (req, res) => {
         });
     }
 };
-// Yoruma cevap oluştur
+
 const replyToComment = async (req, res) => {
     try {
         const { content } = req.body;
@@ -126,7 +126,7 @@ const replyToComment = async (req, res) => {
             });
         }
 
-        // Cevap verilecek yorum var mı?
+      
         const parentComment = await Comment.findById(commentId);
 
         if (!parentComment) {
@@ -136,7 +136,7 @@ const replyToComment = async (req, res) => {
             });
         }
 
-        // Yeni cevap oluştur
+       
         const reply = await Comment.create({
             content,
             author: req.user.id,

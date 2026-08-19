@@ -38,23 +38,125 @@ const createPost = async (req, res) => {
 
 const getPosts = async (req, res) => {
     try {
-        const posts = await Post.find()
+        const {
+            search,
+            author,
+            tag,
+            sort,
+            startDate,
+            endDate,
+        } = req.query;
+
+        
+        const filter = {};
+
+        
+        if (search) {
+            filter.$or = [
+                {
+                    title: {
+                        $regex: search,
+                        $options: "i",
+                    },
+                },
+                {
+                    content: {
+                        $regex: search,
+                        $options: "i",
+                    },
+                },
+            ];
+        }
+
+        
+        if (author) {
+            filter.author = author;
+        }
+
+        
+        if (tag) {
+            filter.tags = {
+                $in: [tag],
+            };
+        }
+
+        
+        if (startDate || endDate) {
+            filter.createdAt = {};
+
+            if (startDate) {
+                const start = new Date(startDate);
+
+                if (isNaN(start.getTime())) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Geçersiz başlangıç tarihi.",
+                    });
+                }
+
+                filter.createdAt.$gte = start;
+            }
+
+            if (endDate) {
+                const end = new Date(endDate);
+
+                if (isNaN(end.getTime())) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Geçersiz bitiş tarihi.",
+                    });
+                }
+
+                end.setHours(23, 59, 59, 999);
+
+                filter.createdAt.$lte = end;
+            }
+        }
+
+        
+        const posts = await Post.find(filter)
             .populate("author", "name email avatar")
-            .sort({ createdAt: -1 })
             .lean();
 
-        const postsWithLikes = await Promise.all(
-            posts.map(async (post) => {
-                const likeCount = await Like.countDocuments({
-                    post: post._id,
-                });
+        
+        const likeCounts = await Like.aggregate([
+            {
+                $group: {
+                    _id: "$post",
+                    count: {
+                        $sum: 1,
+                    },
+                },
+            },
+        ]);
 
-                return {
-                    ...post,
-                    likeCount,
-                };
-            })
-        );
+        
+        const likeCountMap = {};
+
+        likeCounts.forEach((item) => {
+            likeCountMap[item._id.toString()] = item.count;
+        });
+
+
+        const postsWithLikes = posts.map((post) => ({
+            ...post,
+            likeCount:
+                likeCountMap[post._id.toString()] || 0,
+        }));
+
+        
+        if (sort === "popular") {
+            postsWithLikes.sort(
+                (a, b) => b.likeCount - a.likeCount
+            );
+        } else {
+            
+            postsWithLikes.sort(
+                (a, b) =>
+                    new Date(b.createdAt) -
+                    new Date(a.createdAt)
+            );
+        }
 
         return res.status(200).json({
             success: true,
@@ -70,7 +172,6 @@ const getPosts = async (req, res) => {
         });
     }
 };
-
 
 const getPostById = async (req, res) => {
     try {
@@ -115,7 +216,7 @@ const updatePost = async (req, res) => {
             });
         }
 
-        // Sadece yazının sahibi güncelleyebilir
+        
         if (post.author.toString() !== req.user.id) {
             return res.status(403).json({
                 success: false,
